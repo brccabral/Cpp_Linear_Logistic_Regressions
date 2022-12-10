@@ -22,4 +22,6 @@ public:
     auto Std(Eigen::MatrixXd data) -> decltype((data.array().square().colwise().sum() / (data.rows() - 1)).sqrt());
     Eigen::MatrixXd Normalize(Eigen::MatrixXd data);
     Eigen::MatrixXd Norm(Eigen::MatrixXd data);
+
+    std::tuple<Eigen::MatrixXd, Eigen::MatrixXd, Eigen::MatrixXd, Eigen::MatrixXd> TrainTestSplit(Eigen::MatrixXd data, float train_size);
 };
