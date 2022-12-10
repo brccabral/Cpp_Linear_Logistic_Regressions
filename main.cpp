@@ -45,8 +45,24 @@ int main(int argc, char *argv[])
     std::tuple<Eigen::VectorXd, std::vector<float>> gd = lr.GradientDescent(X_train, y_train, theta, alpha, iters);
     std::tie(thetaOut, cost) = gd;
 
-    etl.VectorToFile(cost, "dataset/cost.txt");
-    etl.EigenToFile(thetaOut, "dataset/thetaOut.txt");
+    // etl.VectorToFile(cost, "dataset/cost.txt");
+    // etl.EigenToFile(thetaOut, "dataset/thetaOut.txt");
+
+    auto mu_data = etl.Mean(dataMat);
+    auto mu_z = mu_data(0, 11);
+
+    auto scaled_data = dataMat.rowwise() - dataMat.colwise().mean();
+
+    auto sigma_data = etl.Std(scaled_data);
+    auto sigma_z = sigma_data(0, 11);
+
+    Eigen::MatrixXd y_train_hat = (X_train * thetaOut * sigma_z).array() + mu_z;
+    Eigen::MatrixXd y = dataMat.col(11).topRows(y_train_hat.rows());
+
+    float R_Squared = lr.RSquared(y, y_train_hat);
+    std::cout << "R-Squared: " << R_Squared << std::endl;
+
+    etl.EigenToFile(y_train_hat, "dataset/y_train_hat.txt");
 
     return EXIT_SUCCESS;
 }
