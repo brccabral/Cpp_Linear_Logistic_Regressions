@@ -10,8 +10,6 @@
 #ifndef EIGEN_MISC_IMAGE_H
 #define EIGEN_MISC_IMAGE_H
 
-#include "./InternalHeaderCheck.h"
-
 namespace Eigen { 
 
 namespace internal {
@@ -34,12 +32,13 @@ struct traits<image_retval_base<DecompositionType> >
   > ReturnType;
 };
 
-template<typename DecompositionType_> struct image_retval_base
- : public ReturnByValue<image_retval_base<DecompositionType_> >
+template<typename _DecompositionType> struct image_retval_base
+ : public ReturnByValue<image_retval_base<_DecompositionType> >
 {
-  typedef DecompositionType_ DecompositionType;
+  typedef _DecompositionType DecompositionType;
   typedef typename DecompositionType::MatrixType MatrixType;
   typedef ReturnByValue<image_retval_base> Base;
+  typedef typename Base::Index Index;
 
   image_retval_base(const DecompositionType& dec, const MatrixType& originalMatrix)
     : m_dec(dec), m_rank(dec.rank()),
@@ -70,6 +69,7 @@ template<typename DecompositionType_> struct image_retval_base
   typedef typename DecompositionType::MatrixType MatrixType; \
   typedef typename MatrixType::Scalar Scalar; \
   typedef typename MatrixType::RealScalar RealScalar; \
+  typedef typename MatrixType::Index Index; \
   typedef Eigen::internal::image_retval_base<DecompositionType> Base; \
   using Base::dec; \
   using Base::originalMatrix; \

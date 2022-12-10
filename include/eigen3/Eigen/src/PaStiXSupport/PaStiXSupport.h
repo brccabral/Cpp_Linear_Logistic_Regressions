@@ -10,10 +10,6 @@
 #ifndef EIGEN_PASTIXSUPPORT_H
 #define EIGEN_PASTIXSUPPORT_H
 
-#include "./InternalHeaderCheck.h"
-
-namespace Eigen { 
-
 #if defined(DCOMPLEX)
   #define PASTIX_COMPLEX  COMPLEX
   #define PASTIX_DCOMPLEX DCOMPLEX
@@ -21,6 +17,8 @@ namespace Eigen {
   #define PASTIX_COMPLEX  std::complex<float>
   #define PASTIX_DCOMPLEX std::complex<double>
 #endif
+
+namespace Eigen { 
 
 /** \ingroup PaStiXSupport_Module
   * \brief Interface to the PaStix solver
@@ -30,68 +28,68 @@ namespace Eigen {
   *
   * \sa TutorialSparseDirectSolvers
   */
-template<typename MatrixType_, bool IsStrSym = false> class PastixLU;
-template<typename MatrixType_, int Options> class PastixLLT;
-template<typename MatrixType_, int Options> class PastixLDLT;
+template<typename _MatrixType, bool IsStrSym = false> class PastixLU;
+template<typename _MatrixType, int Options> class PastixLLT;
+template<typename _MatrixType, int Options> class PastixLDLT;
 
 namespace internal
 {
     
   template<class Pastix> struct pastix_traits;
 
-  template<typename MatrixType_>
-  struct pastix_traits< PastixLU<MatrixType_> >
+  template<typename _MatrixType>
+  struct pastix_traits< PastixLU<_MatrixType> >
   {
-    typedef MatrixType_ MatrixType;
-    typedef typename MatrixType_::Scalar Scalar;
-    typedef typename MatrixType_::RealScalar RealScalar;
-    typedef typename MatrixType_::StorageIndex StorageIndex;
+    typedef _MatrixType MatrixType;
+    typedef typename _MatrixType::Scalar Scalar;
+    typedef typename _MatrixType::RealScalar RealScalar;
+    typedef typename _MatrixType::Index Index;
   };
 
-  template<typename MatrixType_, int Options>
-  struct pastix_traits< PastixLLT<MatrixType_,Options> >
+  template<typename _MatrixType, int Options>
+  struct pastix_traits< PastixLLT<_MatrixType,Options> >
   {
-    typedef MatrixType_ MatrixType;
-    typedef typename MatrixType_::Scalar Scalar;
-    typedef typename MatrixType_::RealScalar RealScalar;
-    typedef typename MatrixType_::StorageIndex StorageIndex;
+    typedef _MatrixType MatrixType;
+    typedef typename _MatrixType::Scalar Scalar;
+    typedef typename _MatrixType::RealScalar RealScalar;
+    typedef typename _MatrixType::Index Index;
   };
 
-  template<typename MatrixType_, int Options>
-  struct pastix_traits< PastixLDLT<MatrixType_,Options> >
+  template<typename _MatrixType, int Options>
+  struct pastix_traits< PastixLDLT<_MatrixType,Options> >
   {
-    typedef MatrixType_ MatrixType;
-    typedef typename MatrixType_::Scalar Scalar;
-    typedef typename MatrixType_::RealScalar RealScalar;
-    typedef typename MatrixType_::StorageIndex StorageIndex;
+    typedef _MatrixType MatrixType;
+    typedef typename _MatrixType::Scalar Scalar;
+    typedef typename _MatrixType::RealScalar RealScalar;
+    typedef typename _MatrixType::Index Index;
   };
   
-  inline void eigen_pastix(pastix_data_t **pastix_data, int pastix_comm, int n, int *ptr, int *idx, float *vals, int *perm, int * invp, float *x, int nbrhs, int *iparm, double *dparm)
+  void eigen_pastix(pastix_data_t **pastix_data, int pastix_comm, int n, int *ptr, int *idx, float *vals, int *perm, int * invp, float *x, int nbrhs, int *iparm, double *dparm)
   {
     if (n == 0) { ptr = NULL; idx = NULL; vals = NULL; }
     if (nbrhs == 0) {x = NULL; nbrhs=1;}
     s_pastix(pastix_data, pastix_comm, n, ptr, idx, vals, perm, invp, x, nbrhs, iparm, dparm); 
   }
   
-  inline void eigen_pastix(pastix_data_t **pastix_data, int pastix_comm, int n, int *ptr, int *idx, double *vals, int *perm, int * invp, double *x, int nbrhs, int *iparm, double *dparm)
+  void eigen_pastix(pastix_data_t **pastix_data, int pastix_comm, int n, int *ptr, int *idx, double *vals, int *perm, int * invp, double *x, int nbrhs, int *iparm, double *dparm)
   {
     if (n == 0) { ptr = NULL; idx = NULL; vals = NULL; }
     if (nbrhs == 0) {x = NULL; nbrhs=1;}
     d_pastix(pastix_data, pastix_comm, n, ptr, idx, vals, perm, invp, x, nbrhs, iparm, dparm); 
   }
   
-  inline void eigen_pastix(pastix_data_t **pastix_data, int pastix_comm, int n, int *ptr, int *idx, std::complex<float> *vals, int *perm, int * invp, std::complex<float> *x, int nbrhs, int *iparm, double *dparm)
+  void eigen_pastix(pastix_data_t **pastix_data, int pastix_comm, int n, int *ptr, int *idx, std::complex<float> *vals, int *perm, int * invp, std::complex<float> *x, int nbrhs, int *iparm, double *dparm)
   {
     if (n == 0) { ptr = NULL; idx = NULL; vals = NULL; }
     if (nbrhs == 0) {x = NULL; nbrhs=1;}
-    c_pastix(pastix_data, pastix_comm, n, ptr, idx, reinterpret_cast<PASTIX_COMPLEX*>(vals), perm, invp, reinterpret_cast<PASTIX_COMPLEX*>(x), nbrhs, iparm, dparm); 
+    c_pastix(pastix_data, pastix_comm, n, ptr, idx, reinterpret_cast<PASTIX_COMPLEX*>(vals), perm, invp, reinterpret_cast<PASTIX_COMPLEX*>(x), nbrhs, iparm, dparm);
   }
   
-  inline void eigen_pastix(pastix_data_t **pastix_data, int pastix_comm, int n, int *ptr, int *idx, std::complex<double> *vals, int *perm, int * invp, std::complex<double> *x, int nbrhs, int *iparm, double *dparm)
+  void eigen_pastix(pastix_data_t **pastix_data, int pastix_comm, int n, int *ptr, int *idx, std::complex<double> *vals, int *perm, int * invp, std::complex<double> *x, int nbrhs, int *iparm, double *dparm)
   {
     if (n == 0) { ptr = NULL; idx = NULL; vals = NULL; }
     if (nbrhs == 0) {x = NULL; nbrhs=1;}
-    z_pastix(pastix_data, pastix_comm, n, ptr, idx, reinterpret_cast<PASTIX_DCOMPLEX*>(vals), perm, invp, reinterpret_cast<PASTIX_DCOMPLEX*>(x), nbrhs, iparm, dparm); 
+    z_pastix(pastix_data, pastix_comm, n, ptr, idx, reinterpret_cast<PASTIX_DCOMPLEX*>(vals), perm, invp, reinterpret_cast<PASTIX_DCOMPLEX*>(x), nbrhs, iparm, dparm);
   }
 
   // Convert the matrix  to Fortran-style Numbering
@@ -127,30 +125,20 @@ namespace internal
 // This is the base class to interface with PaStiX functions. 
 // Users should not used this class directly. 
 template <class Derived>
-class PastixBase : public SparseSolverBase<Derived>
+class PastixBase : internal::noncopyable
 {
-  protected:
-    typedef SparseSolverBase<Derived> Base;
-    using Base::derived;
-    using Base::m_isInitialized;
   public:
-    using Base::_solve_impl;
-    
-    typedef typename internal::pastix_traits<Derived>::MatrixType MatrixType_;
-    typedef MatrixType_ MatrixType;
+    typedef typename internal::pastix_traits<Derived>::MatrixType _MatrixType;
+    typedef _MatrixType MatrixType;
     typedef typename MatrixType::Scalar Scalar;
     typedef typename MatrixType::RealScalar RealScalar;
-    typedef typename MatrixType::StorageIndex StorageIndex;
+    typedef typename MatrixType::Index Index;
     typedef Matrix<Scalar,Dynamic,1> Vector;
     typedef SparseMatrix<Scalar, ColMajor> ColSpMatrix;
-    enum {
-      ColsAtCompileTime = MatrixType::ColsAtCompileTime,
-      MaxColsAtCompileTime = MatrixType::MaxColsAtCompileTime
-    };
     
   public:
     
-    PastixBase() : m_initisOk(false), m_analysisIsOk(false), m_factorizationIsOk(false), m_pastixdata(0), m_size(0)
+    PastixBase() : m_initisOk(false), m_analysisIsOk(false), m_factorizationIsOk(false), m_isInitialized(false), m_pastixdata(0), m_size(0)
     {
       init();
     }
@@ -159,16 +147,39 @@ class PastixBase : public SparseSolverBase<Derived>
     {
       clean();
     }
+
+    /** \returns the solution x of \f$ A x = b \f$ using the current decomposition of A.
+      *
+      * \sa compute()
+      */
+    template<typename Rhs>
+    inline const internal::solve_retval<PastixBase, Rhs>
+    solve(const MatrixBase<Rhs>& b) const
+    {
+      eigen_assert(m_isInitialized && "Pastix solver is not initialized.");
+      eigen_assert(rows()==b.rows()
+                && "PastixBase::solve(): invalid number of rows of the right hand side matrix b");
+      return internal::solve_retval<PastixBase, Rhs>(*this, b.derived());
+    }
     
     template<typename Rhs,typename Dest>
-    bool _solve_impl(const MatrixBase<Rhs> &b, MatrixBase<Dest> &x) const;
+    bool _solve (const MatrixBase<Rhs> &b, MatrixBase<Dest> &x) const;
     
+    Derived& derived()
+    {
+      return *static_cast<Derived*>(this);
+    }
+    const Derived& derived() const
+    {
+      return *static_cast<const Derived*>(this);
+    }
+
     /** Returns a reference to the integer vector IPARM of PaStiX parameters
       * to modify the default parameters. 
       * The statistics related to the different phases of factorization and solve are saved here as well
       * \sa analyzePattern() factorize()
       */
-    Array<StorageIndex,IPARM_SIZE,1>& iparm()
+    Array<Index,IPARM_SIZE,1>& iparm()
     {
       return m_iparm; 
     }
@@ -186,7 +197,7 @@ class PastixBase : public SparseSolverBase<Derived>
       * The statistics related to the different phases of factorization and solve are saved here as well
       * \sa analyzePattern() factorize()
       */
-    Array<double,DPARM_SIZE,1>& dparm()
+    Array<RealScalar,IPARM_SIZE,1>& dparm()
     {
       return m_dparm; 
     }
@@ -205,7 +216,7 @@ class PastixBase : public SparseSolverBase<Derived>
     
      /** \brief Reports whether previous computation was successful.
       *
-      * \returns \c Success if computation was successful,
+      * \returns \c Success if computation was succesful,
       *          \c NumericalIssue if the PaStiX reports a problem
       *          \c InvalidInput if the input matrix is invalid
       *
@@ -215,6 +226,20 @@ class PastixBase : public SparseSolverBase<Derived>
     {
       eigen_assert(m_isInitialized && "Decomposition is not initialized.");
       return m_info;
+    }
+    
+    /** \returns the solution x of \f$ A x = b \f$ using the current decomposition of A.
+      *
+      * \sa compute()
+      */
+    template<typename Rhs>
+    inline const internal::sparse_solve_retval<PastixBase, Rhs>
+    solve(const SparseMatrixBase<Rhs>& b) const
+    {
+      eigen_assert(m_isInitialized && "Pastix LU, LLT or LDLT is not initialized.");
+      eigen_assert(rows()==b.rows()
+                && "PastixBase::solve(): invalid number of rows of the right hand side matrix b");
+      return internal::sparse_solve_retval<PastixBase, Rhs>(*this, b.derived());
     }
     
   protected:
@@ -243,13 +268,14 @@ class PastixBase : public SparseSolverBase<Derived>
     int m_initisOk; 
     int m_analysisIsOk;
     int m_factorizationIsOk;
+    bool m_isInitialized;
     mutable ComputationInfo m_info; 
     mutable pastix_data_t *m_pastixdata; // Data structure for pastix
     mutable int m_comm; // The MPI communicator identifier
-    mutable Array<int,IPARM_SIZE,1> m_iparm; // integer vector for the input parameters
-    mutable Array<double,DPARM_SIZE,1> m_dparm; // Scalar vector for the input parameters
-    mutable Matrix<StorageIndex,Dynamic,1> m_perm;  // Permutation vector
-    mutable Matrix<StorageIndex,Dynamic,1> m_invp;  // Inverse permutation vector
+    mutable Matrix<int,IPARM_SIZE,1> m_iparm; // integer vector for the input parameters
+    mutable Matrix<double,DPARM_SIZE,1> m_dparm; // Scalar vector for the input parameters
+    mutable Matrix<Index,Dynamic,1> m_perm;  // Permutation vector
+    mutable Matrix<Index,Dynamic,1> m_invp;  // Inverse permutation vector
     mutable int m_size; // Size of the matrix 
 }; 
 
@@ -270,7 +296,7 @@ void PastixBase<Derived>::init()
          0, 0, 0, 1, m_iparm.data(), m_dparm.data());
   
   m_iparm[IPARM_MATRIX_VERIFICATION] = API_NO;
-  m_iparm[IPARM_VERBOSE]             = API_VERBOSE_NOT;
+  m_iparm[IPARM_VERBOSE]             = 2;
   m_iparm[IPARM_ORDERING]            = API_ORDER_SCOTCH;
   m_iparm[IPARM_INCOMPLETE]          = API_NO;
   m_iparm[IPARM_OOC_LIMIT]           = 2000;
@@ -302,6 +328,7 @@ void PastixBase<Derived>::compute(ColSpMatrix& mat)
   factorize(mat);
   
   m_iparm(IPARM_MATRIX_VERIFICATION) = API_NO;
+  m_isInitialized = m_factorizationIsOk;
 }
 
 
@@ -314,7 +341,7 @@ void PastixBase<Derived>::analyzePattern(ColSpMatrix& mat)
   if(m_size>0)
     clean();
   
-  m_size = internal::convert_index<int>(mat.rows());
+  m_size = mat.rows();
   m_perm.resize(m_size);
   m_invp.resize(m_size);
   
@@ -343,7 +370,7 @@ void PastixBase<Derived>::factorize(ColSpMatrix& mat)
   eigen_assert(m_analysisIsOk && "The analysis phase should be called before the factorization phase");
   m_iparm(IPARM_START_TASK) = API_TASK_NUMFACT;
   m_iparm(IPARM_END_TASK) = API_TASK_NUMFACT;
-  m_size = internal::convert_index<int>(mat.rows());
+  m_size = mat.rows();
   
   internal::eigen_pastix(&m_pastixdata, MPI_COMM_WORLD, m_size, mat.outerIndexPtr(), mat.innerIndexPtr(),
                mat.valuePtr(), m_perm.data(), m_invp.data(), 0, 0, m_iparm.data(), m_dparm.data());
@@ -366,7 +393,7 @@ void PastixBase<Derived>::factorize(ColSpMatrix& mat)
 /* Solve the system */
 template<typename Base>
 template<typename Rhs,typename Dest>
-bool PastixBase<Base>::_solve_impl(const MatrixBase<Rhs> &b, MatrixBase<Dest> &x) const
+bool PastixBase<Base>::_solve (const MatrixBase<Rhs> &b, MatrixBase<Dest> &x) const
 {
   eigen_assert(m_isInitialized && "The matrix should be factorized first");
   EIGEN_STATIC_ASSERT((Dest::Flags&RowMajorBit)==0,
@@ -379,7 +406,7 @@ bool PastixBase<Base>::_solve_impl(const MatrixBase<Rhs> &b, MatrixBase<Dest> &x
     m_iparm[IPARM_START_TASK]          = API_TASK_SOLVE;
     m_iparm[IPARM_END_TASK]            = API_TASK_REFINE;
   
-    internal::eigen_pastix(&m_pastixdata, MPI_COMM_WORLD, internal::convert_index<int>(x.rows()), 0, 0, 0,
+    internal::eigen_pastix(&m_pastixdata, MPI_COMM_WORLD, x.rows(), 0, 0, 0,
                            m_perm.data(), m_invp.data(), &x(0, i), rhs, m_iparm.data(), m_dparm.data());
   }
   
@@ -399,25 +426,23 @@ bool PastixBase<Base>::_solve_impl(const MatrixBase<Rhs> &b, MatrixBase<Dest> &x
   * This interface can symmetrize the input matrix otherwise. 
   * The vectors or matrices X and B can be either dense or sparse.
   * 
-  * \tparam MatrixType_ the type of the sparse matrix A, it must be a SparseMatrix<>
+  * \tparam _MatrixType the type of the sparse matrix A, it must be a SparseMatrix<>
   * \tparam IsStrSym Indicates if the input matrix has a symmetric pattern, default is false
   * NOTE : Note that if the analysis and factorization phase are called separately, 
   * the input matrix will be symmetrized at each call, hence it is advised to 
   * symmetrize the matrix in a end-user program and set \p IsStrSym to true
-  *
-  * \implsparsesolverconcept
-  *
-  * \sa \ref TutorialSparseSolverConcept, class SparseLU
+  * 
+  * \sa \ref TutorialSparseDirectSolvers
   * 
   */
-template<typename MatrixType_, bool IsStrSym>
-class PastixLU : public PastixBase< PastixLU<MatrixType_> >
+template<typename _MatrixType, bool IsStrSym>
+class PastixLU : public PastixBase< PastixLU<_MatrixType> >
 {
   public:
-    typedef MatrixType_ MatrixType;
+    typedef _MatrixType MatrixType;
     typedef PastixBase<PastixLU<MatrixType> > Base;
     typedef typename Base::ColSpMatrix ColSpMatrix;
-    typedef typename MatrixType::StorageIndex StorageIndex;
+    typedef typename MatrixType::Index Index;
     
   public:
     PastixLU() : Base()
@@ -425,7 +450,7 @@ class PastixLU : public PastixBase< PastixLU<MatrixType_> >
       init();
     }
     
-    explicit PastixLU(const MatrixType& matrix):Base()
+    PastixLU(const MatrixType& matrix):Base()
     {
       init();
       compute(matrix);
@@ -517,27 +542,25 @@ class PastixLU : public PastixBase< PastixLU<MatrixType_> >
   * 
   * \tparam MatrixType the type of the sparse matrix A, it must be a SparseMatrix<>
   * \tparam UpLo The part of the matrix to use : Lower or Upper. The default is Lower as required by PaStiX
-  *
-  * \implsparsesolverconcept
-  *
-  * \sa \ref TutorialSparseSolverConcept, class SimplicialLLT
+  * 
+  * \sa \ref TutorialSparseDirectSolvers
   */
-template<typename MatrixType_, int UpLo_>
-class PastixLLT : public PastixBase< PastixLLT<MatrixType_, UpLo_> >
+template<typename _MatrixType, int _UpLo>
+class PastixLLT : public PastixBase< PastixLLT<_MatrixType, _UpLo> >
 {
   public:
-    typedef MatrixType_ MatrixType;
-    typedef PastixBase<PastixLLT<MatrixType, UpLo_> > Base;
+    typedef _MatrixType MatrixType;
+    typedef PastixBase<PastixLLT<MatrixType, _UpLo> > Base;
     typedef typename Base::ColSpMatrix ColSpMatrix;
     
   public:
-    enum { UpLo = UpLo_ };
+    enum { UpLo = _UpLo };
     PastixLLT() : Base()
     {
       init();
     }
     
-    explicit PastixLLT(const MatrixType& matrix):Base()
+    PastixLLT(const MatrixType& matrix):Base()
     {
       init();
       compute(matrix);
@@ -583,7 +606,6 @@ class PastixLLT : public PastixBase< PastixLLT<MatrixType_, UpLo_> >
     
     void grabMatrix(const MatrixType& matrix, ColSpMatrix& out)
     {
-      out.resize(matrix.rows(), matrix.cols());
       // Pastix supports only lower, column-major matrices 
       out.template selfadjointView<Lower>() = matrix.template selfadjointView<UpLo>();
       internal::c_to_fortran_numbering(out);
@@ -601,27 +623,25 @@ class PastixLLT : public PastixBase< PastixLLT<MatrixType_, UpLo_> >
   * 
   * \tparam MatrixType the type of the sparse matrix A, it must be a SparseMatrix<>
   * \tparam UpLo The part of the matrix to use : Lower or Upper. The default is Lower as required by PaStiX
-  *
-  * \implsparsesolverconcept
-  *
-  * \sa \ref TutorialSparseSolverConcept, class SimplicialLDLT
+  * 
+  * \sa \ref TutorialSparseDirectSolvers
   */
-template<typename MatrixType_, int UpLo_>
-class PastixLDLT : public PastixBase< PastixLDLT<MatrixType_, UpLo_> >
+template<typename _MatrixType, int _UpLo>
+class PastixLDLT : public PastixBase< PastixLDLT<_MatrixType, _UpLo> >
 {
   public:
-    typedef MatrixType_ MatrixType;
-    typedef PastixBase<PastixLDLT<MatrixType, UpLo_> > Base;
+    typedef _MatrixType MatrixType;
+    typedef PastixBase<PastixLDLT<MatrixType, _UpLo> > Base; 
     typedef typename Base::ColSpMatrix ColSpMatrix;
     
   public:
-    enum { UpLo = UpLo_ };
+    enum { UpLo = _UpLo };
     PastixLDLT():Base()
     {
       init();
     }
     
-    explicit PastixLDLT(const MatrixType& matrix):Base()
+    PastixLDLT(const MatrixType& matrix):Base()
     {
       init();
       compute(matrix);
@@ -669,11 +689,40 @@ class PastixLDLT : public PastixBase< PastixLDLT<MatrixType_, UpLo_> >
     void grabMatrix(const MatrixType& matrix, ColSpMatrix& out)
     {
       // Pastix supports only lower, column-major matrices 
-      out.resize(matrix.rows(), matrix.cols());
       out.template selfadjointView<Lower>() = matrix.template selfadjointView<UpLo>();
       internal::c_to_fortran_numbering(out);
     }
 };
+
+namespace internal {
+
+template<typename _MatrixType, typename Rhs>
+struct solve_retval<PastixBase<_MatrixType>, Rhs>
+  : solve_retval_base<PastixBase<_MatrixType>, Rhs>
+{
+  typedef PastixBase<_MatrixType> Dec;
+  EIGEN_MAKE_SOLVE_HELPERS(Dec,Rhs)
+
+  template<typename Dest> void evalTo(Dest& dst) const
+  {
+    dec()._solve(rhs(),dst);
+  }
+};
+
+template<typename _MatrixType, typename Rhs>
+struct sparse_solve_retval<PastixBase<_MatrixType>, Rhs>
+  : sparse_solve_retval_base<PastixBase<_MatrixType>, Rhs>
+{
+  typedef PastixBase<_MatrixType> Dec;
+  EIGEN_MAKE_SPARSE_SOLVE_HELPERS(Dec,Rhs)
+
+  template<typename Dest> void evalTo(Dest& dst) const
+  {
+    this->defaultEvalTo(dst);
+  }
+};
+
+} // end namespace internal
 
 } // end namespace Eigen
 

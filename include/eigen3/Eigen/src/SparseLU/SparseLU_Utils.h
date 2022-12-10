@@ -11,16 +11,14 @@
 #ifndef EIGEN_SPARSELU_UTILS_H
 #define EIGEN_SPARSELU_UTILS_H
 
-#include "./InternalHeaderCheck.h"
-
 namespace Eigen {
 namespace internal {
 
 /**
  * \brief Count Nonzero elements in the factors
  */
-template <typename Scalar, typename StorageIndex>
-void SparseLUImpl<Scalar,StorageIndex>::countnz(const Index n, Index& nnzL, Index& nnzU, GlobalLU_t& glu)
+template <typename Scalar, typename Index>
+void SparseLUImpl<Scalar,Index>::countnz(const Index n, Index& nnzL, Index& nnzU, GlobalLU_t& glu)
 {
  nnzL = 0; 
  nnzU = (glu.xusub)(n); 
@@ -50,12 +48,12 @@ void SparseLUImpl<Scalar,StorageIndex>::countnz(const Index n, Index& nnzL, Inde
  * and applies permutation to the remaining subscripts
  * 
  */
-template <typename Scalar, typename StorageIndex>
-void SparseLUImpl<Scalar,StorageIndex>::fixupL(const Index n, const IndexVector& perm_r, GlobalLU_t& glu)
+template <typename Scalar, typename Index>
+void SparseLUImpl<Scalar,Index>::fixupL(const Index n, const IndexVector& perm_r, GlobalLU_t& glu)
 {
   Index fsupc, i, j, k, jstart; 
   
-  StorageIndex nextl = 0; 
+  Index nextl = 0; 
   Index nsuper = (glu.supno)(n); 
   
   // For each supernode 

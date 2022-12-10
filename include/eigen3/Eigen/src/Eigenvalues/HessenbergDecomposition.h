@@ -11,8 +11,6 @@
 #ifndef EIGEN_HESSENBERGDECOMPOSITION_H
 #define EIGEN_HESSENBERGDECOMPOSITION_H
 
-#include "./InternalHeaderCheck.h"
-
 namespace Eigen { 
 
 namespace internal {
@@ -33,7 +31,7 @@ struct traits<HessenbergDecompositionMatrixHReturnType<MatrixType> >
   *
   * \brief Reduces a square matrix to Hessenberg form by an orthogonal similarity transformation
   *
-  * \tparam MatrixType_ the type of the matrix of which we are computing the Hessenberg decomposition
+  * \tparam _MatrixType the type of the matrix of which we are computing the Hessenberg decomposition
   *
   * This class performs an Hessenberg decomposition of a matrix \f$ A \f$. In
   * the real case, the Hessenberg decomposition consists of an orthogonal
@@ -56,12 +54,12 @@ struct traits<HessenbergDecompositionMatrixHReturnType<MatrixType> >
   *
   * \sa class ComplexSchur, class Tridiagonalization, \ref QR_Module "QR Module"
   */
-template<typename MatrixType_> class HessenbergDecomposition
+template<typename _MatrixType> class HessenbergDecomposition
 {
   public:
 
-    /** \brief Synonym for the template parameter \p MatrixType_. */
-    typedef MatrixType_ MatrixType;
+    /** \brief Synonym for the template parameter \p _MatrixType. */
+    typedef _MatrixType MatrixType;
 
     enum {
       Size = MatrixType::RowsAtCompileTime,
@@ -73,7 +71,7 @@ template<typename MatrixType_> class HessenbergDecomposition
 
     /** \brief Scalar type for matrices of type #MatrixType. */
     typedef typename MatrixType::Scalar Scalar;
-    typedef Eigen::Index Index; ///< \deprecated since Eigen 3.3
+    typedef typename MatrixType::Index Index;
 
     /** \brief Type for vector of Householder coefficients.
       *
@@ -84,7 +82,7 @@ template<typename MatrixType_> class HessenbergDecomposition
     typedef Matrix<Scalar, SizeMinusOne, 1, Options & ~RowMajor, MaxSizeMinusOne, 1> CoeffVectorType;
 
     /** \brief Return type of matrixQ() */
-    typedef HouseholderSequence<MatrixType,internal::remove_all_t<typename CoeffVectorType::ConjugateReturnType>> HouseholderSequenceType;
+    typedef HouseholderSequence<MatrixType,typename internal::remove_all<typename CoeffVectorType::ConjugateReturnType>::type> HouseholderSequenceType;
     
     typedef internal::HessenbergDecompositionMatrixHReturnType<MatrixType> MatrixHReturnType;
 
@@ -99,7 +97,7 @@ template<typename MatrixType_> class HessenbergDecomposition
       *
       * \sa compute() for an example.
       */
-    explicit HessenbergDecomposition(Index size = Size==Dynamic ? 2 : Size)
+    HessenbergDecomposition(Index size = Size==Dynamic ? 2 : Size)
       : m_matrix(size,size),
         m_temp(size),
         m_isInitialized(false)
@@ -117,9 +115,8 @@ template<typename MatrixType_> class HessenbergDecomposition
       *
       * \sa matrixH() for an example.
       */
-    template<typename InputType>
-    explicit HessenbergDecomposition(const EigenBase<InputType>& matrix)
-      : m_matrix(matrix.derived()),
+    HessenbergDecomposition(const MatrixType& matrix)
+      : m_matrix(matrix),
         m_temp(matrix.rows()),
         m_isInitialized(false)
     {
@@ -150,10 +147,9 @@ template<typename MatrixType_> class HessenbergDecomposition
       * Example: \include HessenbergDecomposition_compute.cpp
       * Output: \verbinclude HessenbergDecomposition_compute.out
       */
-    template<typename InputType>
-    HessenbergDecomposition& compute(const EigenBase<InputType>& matrix)
+    HessenbergDecomposition& compute(const MatrixType& matrix)
     {
-      m_matrix = matrix.derived();
+      m_matrix = matrix;
       if(matrix.rows()<2)
       {
         m_isInitialized = true;
@@ -269,7 +265,7 @@ template<typename MatrixType_> class HessenbergDecomposition
 
   private:
 
-    typedef Matrix<Scalar, 1, Size, int(Options) | int(RowMajor), 1, MaxSize> VectorType;
+    typedef Matrix<Scalar, 1, Size, Options | RowMajor, 1, MaxSize> VectorType;
     typedef typename NumTraits<Scalar>::Real RealScalar;
     static void _compute(MatrixType& matA, CoeffVectorType& hCoeffs, VectorType& temp);
 
@@ -317,7 +313,7 @@ void HessenbergDecomposition<MatrixType>::_compute(MatrixType& matA, CoeffVector
 
     // A = A H'
     matA.rightCols(remainingSize)
-        .applyHouseholderOnTheRight(matA.col(i).tail(remainingSize-1), numext::conj(h), &temp.coeffRef(0));
+        .applyHouseholderOnTheRight(matA.col(i).tail(remainingSize-1).conjugate(), numext::conj(h), &temp.coeffRef(0));
   }
 }
 
@@ -341,6 +337,7 @@ namespace internal {
 template<typename MatrixType> struct HessenbergDecompositionMatrixHReturnType
 : public ReturnByValue<HessenbergDecompositionMatrixHReturnType<MatrixType> >
 {
+    typedef typename MatrixType::Index Index;
   public:
     /** \brief Constructor.
       *

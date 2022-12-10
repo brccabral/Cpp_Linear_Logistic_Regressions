@@ -10,8 +10,6 @@
 #ifndef EIGEN_REAL_QZ_H
 #define EIGEN_REAL_QZ_H
 
-#include "./InternalHeaderCheck.h"
-
 namespace Eigen {
 
   /** \eigenvalues_module \ingroup Eigenvalues_Module
@@ -21,7 +19,7 @@ namespace Eigen {
    *
    * \brief Performs a real QZ decomposition of a pair of square matrices
    *
-   * \tparam MatrixType_ the type of the matrix of which we are computing the
+   * \tparam _MatrixType the type of the matrix of which we are computing the
    * real QZ decomposition; this is expected to be an instantiation of the
    * Matrix class template.
    *
@@ -56,10 +54,10 @@ namespace Eigen {
    * \sa class RealSchur, class ComplexSchur, class EigenSolver, class ComplexEigenSolver
    */
 
-  template<typename MatrixType_> class RealQZ
+  template<typename _MatrixType> class RealQZ
   {
     public:
-      typedef MatrixType_ MatrixType;
+      typedef _MatrixType MatrixType;
       enum {
         RowsAtCompileTime = MatrixType::RowsAtCompileTime,
         ColsAtCompileTime = MatrixType::ColsAtCompileTime,
@@ -69,7 +67,7 @@ namespace Eigen {
       };
       typedef typename MatrixType::Scalar Scalar;
       typedef std::complex<typename NumTraits<Scalar>::Real> ComplexScalar;
-      typedef Eigen::Index Index; ///< \deprecated since Eigen 3.3
+      typedef typename MatrixType::Index Index;
 
       typedef Matrix<ComplexScalar, ColsAtCompileTime, 1, Options & ~RowMajor, MaxColsAtCompileTime, 1> EigenvalueType;
       typedef Matrix<Scalar, ColsAtCompileTime, 1, Options & ~RowMajor, MaxColsAtCompileTime, 1> ColumnVectorType;
@@ -85,16 +83,15 @@ namespace Eigen {
        *
        * \sa compute() for an example.
        */
-      explicit RealQZ(Index size = RowsAtCompileTime==Dynamic ? 1 : RowsAtCompileTime) :
+      RealQZ(Index size = RowsAtCompileTime==Dynamic ? 1 : RowsAtCompileTime) : 
         m_S(size, size),
         m_T(size, size),
         m_Q(size, size),
         m_Z(size, size),
         m_workspace(size*2),
         m_maxIters(400),
-        m_isInitialized(false),
-        m_computeQZ(true)
-      {}
+        m_isInitialized(false)
+        { }
 
       /** \brief Constructor; computes real QZ decomposition of given matrices
        * 
@@ -111,11 +108,9 @@ namespace Eigen {
         m_Z(A.rows(),A.cols()),
         m_workspace(A.rows()*2),
         m_maxIters(400),
-        m_isInitialized(false),
-        m_computeQZ(true)
-      {
-        compute(A, B, computeQZ);
-      }
+        m_isInitialized(false) {
+          compute(A, B, computeQZ);
+        }
 
       /** \brief Returns matrix Q in the QZ decomposition. 
        *
@@ -166,7 +161,7 @@ namespace Eigen {
 
       /** \brief Reports whether previous computation was successful.
        *
-       * \returns \c Success if computation was successful, \c NoConvergence otherwise.
+       * \returns \c Success if computation was succesful, \c NoConvergence otherwise.
        */
       ComputationInfo info() const
       {
@@ -239,7 +234,7 @@ namespace Eigen {
         for (Index i=dim-1; i>=j+2; i--) {
           JRs G;
           // kill S(i,j)
-          if(!numext::is_exactly_zero(m_S.coeff(i, j)))
+          if(m_S.coeff(i,j) != 0)
           {
             G.makeGivens(m_S.coeff(i-1,j), m_S.coeff(i,j), &m_S.coeffRef(i-1, j));
             m_S.coeffRef(i,j) = Scalar(0.0);
@@ -250,7 +245,7 @@ namespace Eigen {
               m_Q.applyOnTheRight(i-1,i,G);
           }
           // kill T(i,i-1)
-          if(!numext::is_exactly_zero(m_T.coeff(i, i - 1)))
+          if(m_T.coeff(i,i-1)!=Scalar(0))
           {
             G.makeGivens(m_T.coeff(i,i), m_T.coeff(i,i-1), &m_T.coeffRef(i,i));
             m_T.coeffRef(i,i-1) = Scalar(0.0);
@@ -281,14 +276,14 @@ namespace Eigen {
 
   /** \internal Look for single small sub-diagonal element S(res, res-1) and return res (or 0) */
   template<typename MatrixType>
-    inline Index RealQZ<MatrixType>::findSmallSubdiagEntry(Index iu)
+    inline typename MatrixType::Index RealQZ<MatrixType>::findSmallSubdiagEntry(Index iu)
     {
       using std::abs;
       Index res = iu;
       while (res > 0)
       {
         Scalar s = abs(m_S.coeff(res-1,res-1)) + abs(m_S.coeff(res,res));
-        if (numext::is_exactly_zero(s))
+        if (s == Scalar(0.0))
           s = m_normOfS;
         if (abs(m_S.coeff(res,res-1)) < NumTraits<Scalar>::epsilon() * s)
           break;
@@ -299,7 +294,7 @@ namespace Eigen {
 
   /** \internal Look for single small diagonal element T(res, res) for res between f and l, and return res (or f-1)  */
   template<typename MatrixType>
-    inline Index RealQZ<MatrixType>::findSmallDiagEntry(Index f, Index l)
+    inline typename MatrixType::Index RealQZ<MatrixType>::findSmallDiagEntry(Index f, Index l)
     {
       using std::abs;
       Index res = l;
@@ -318,10 +313,10 @@ namespace Eigen {
       using std::abs;
       using std::sqrt;
       const Index dim=m_S.cols();
-      if (numext::is_exactly_zero(abs(m_S.coeff(i + 1, i))))
+      if (abs(m_S.coeff(i+1,i))==Scalar(0))
         return;
-      Index j = findSmallDiagEntry(i,i+1);
-      if (j==i-1)
+      Index z = findSmallDiagEntry(i,i+1);
+      if (z==i-1)
       {
         // block of (S T^{-1})
         Matrix2s STi = m_T.template block<2,2>(i,i).template triangularView<Upper>().
@@ -357,7 +352,7 @@ namespace Eigen {
       }
       else
       {
-        pushDownZero(j,i,i+1);
+        pushDownZero(z,i,i+1);
       }
     }
 
@@ -557,6 +552,7 @@ namespace Eigen {
       m_T.coeffRef(l,l-1) = Scalar(0.0);
     }
 
+
   template<typename MatrixType>
     RealQZ<MatrixType>& RealQZ<MatrixType>::compute(const MatrixType& A_in, const MatrixType& B_in, bool computeQZ)
     {
@@ -620,37 +616,6 @@ namespace Eigen {
       }
       // check if we converged before reaching iterations limit
       m_info = (local_iter<m_maxIters) ? Success : NoConvergence;
-
-      // For each non triangular 2x2 diagonal block of S,
-      //    reduce the respective 2x2 diagonal block of T to positive diagonal form using 2x2 SVD.
-      // This step is not mandatory for QZ, but it does help further extraction of eigenvalues/eigenvectors,
-      // and is in par with Lapack/Matlab QZ.
-      if(m_info==Success)
-      {
-        for(Index i=0; i<dim-1; ++i)
-        {
-          if(!numext::is_exactly_zero(m_S.coeff(i + 1, i)))
-          {
-            JacobiRotation<Scalar> j_left, j_right;
-            internal::real_2x2_jacobi_svd(m_T, i, i+1, &j_left, &j_right);
-
-            // Apply resulting Jacobi rotations
-            m_S.applyOnTheLeft(i,i+1,j_left);
-            m_S.applyOnTheRight(i,i+1,j_right);
-            m_T.applyOnTheLeft(i,i+1,j_left);
-            m_T.applyOnTheRight(i,i+1,j_right);
-            m_T(i+1,i) = m_T(i,i+1) = Scalar(0);
-
-            if(m_computeQZ) {
-              m_Q.applyOnTheRight(i,i+1,j_left.transpose());
-              m_Z.applyOnTheLeft(i,i+1,j_right.transpose());
-            }
-
-            i++;
-          }
-        }
-      }
-
       return *this;
     } // end compute
 

@@ -1,7 +1,7 @@
 // This file is part of Eigen, a lightweight C++ template library
 // for linear algebra.
 //
-// Copyright (C) 2008-2014 Gael Guennebaud <gael.guennebaud@inria.fr>
+// Copyright (C) 2008 Gael Guennebaud <gael.guennebaud@inria.fr>
 //
 // This Source Code Form is subject to the terms of the Mozilla
 // Public License v. 2.0. If a copy of the MPL was not distributed
@@ -9,8 +9,6 @@
 
 #ifndef EIGEN_COMPRESSED_STORAGE_H
 #define EIGEN_COMPRESSED_STORAGE_H
-
-#include "./InternalHeaderCheck.h"
 
 namespace Eigen { 
 
@@ -20,13 +18,13 @@ namespace internal {
   * Stores a sparse set of values as a list of values and a list of indices.
   *
   */
-template<typename Scalar_,typename StorageIndex_>
+template<typename _Scalar,typename _Index>
 class CompressedStorage
 {
   public:
 
-    typedef Scalar_ Scalar;
-    typedef StorageIndex_ StorageIndex;
+    typedef _Scalar Scalar;
+    typedef _Index Index;
 
   protected:
 
@@ -38,7 +36,7 @@ class CompressedStorage
       : m_values(0), m_indices(0), m_size(0), m_allocatedSize(0)
     {}
 
-    explicit CompressedStorage(Index size)
+    CompressedStorage(size_t size)
       : m_values(0), m_indices(0), m_size(0), m_allocatedSize(0)
     {
       resize(size);
@@ -53,11 +51,8 @@ class CompressedStorage
     CompressedStorage& operator=(const CompressedStorage& other)
     {
       resize(other.size());
-      if(other.size()>0)
-      {
-        internal::smart_copy(other.m_values,  other.m_values  + m_size, m_values);
-        internal::smart_copy(other.m_indices, other.m_indices + m_size, m_indices);
-      }
+      internal::smart_copy(other.m_values,  other.m_values  + m_size, m_values);
+      internal::smart_copy(other.m_indices, other.m_indices + m_size, m_indices);
       return *this;
     }
 
@@ -71,13 +66,13 @@ class CompressedStorage
 
     ~CompressedStorage()
     {
-      conditional_aligned_delete_auto<Scalar, true>(m_values, m_allocatedSize);
-      conditional_aligned_delete_auto<StorageIndex, true>(m_indices, m_allocatedSize);
+      delete[] m_values;
+      delete[] m_indices;
     }
 
-    void reserve(Index size)
+    void reserve(size_t size)
     {
-      Index newAllocatedSize = m_size + size;
+      size_t newAllocatedSize = m_size + size;
       if (newAllocatedSize > m_allocatedSize)
         reallocate(newAllocatedSize);
     }
@@ -88,40 +83,44 @@ class CompressedStorage
         reallocate(m_size);
     }
 
-    void resize(Index size, double reserveSizeFactor = 0)
+    void resize(size_t size, double reserveSizeFactor = 0)
     {
       if (m_allocatedSize<size)
-      {
-        Index realloc_size = (std::min<Index>)(NumTraits<StorageIndex>::highest(),  size + Index(reserveSizeFactor*double(size)));
-        if(realloc_size<size)
-          internal::throw_std_bad_alloc();
-        reallocate(realloc_size);
-      }
+        reallocate(size + size_t(reserveSizeFactor*double(size)));
       m_size = size;
     }
 
     void append(const Scalar& v, Index i)
     {
-      Index id = m_size;
+      Index id = static_cast<Index>(m_size);
       resize(m_size+1, 1);
       m_values[id] = v;
-      m_indices[id] = internal::convert_index<StorageIndex>(i);
+      m_indices[id] = i;
     }
 
-    inline Index size() const { return m_size; }
-    inline Index allocatedSize() const { return m_allocatedSize; }
+    inline size_t size() const { return m_size; }
+    inline size_t allocatedSize() const { return m_allocatedSize; }
     inline void clear() { m_size = 0; }
 
     const Scalar* valuePtr() const { return m_values; }
     Scalar* valuePtr() { return m_values; }
-    const StorageIndex* indexPtr() const { return m_indices; }
-    StorageIndex* indexPtr() { return m_indices; }
+    const Index* indexPtr() const { return m_indices; }
+    Index* indexPtr() { return m_indices; }
 
-    inline Scalar& value(Index i) { eigen_internal_assert(m_values!=0); return m_values[i]; }
-    inline const Scalar& value(Index i) const { eigen_internal_assert(m_values!=0); return m_values[i]; }
+    inline Scalar& value(size_t i) { return m_values[i]; }
+    inline const Scalar& value(size_t i) const { return m_values[i]; }
 
-    inline StorageIndex& index(Index i) { eigen_internal_assert(m_indices!=0); return m_indices[i]; }
-    inline const StorageIndex& index(Index i) const { eigen_internal_assert(m_indices!=0); return m_indices[i]; }
+    inline Index& index(size_t i) { return m_indices[i]; }
+    inline const Index& index(size_t i) const { return m_indices[i]; }
+
+    static CompressedStorage Map(Index* indices, Scalar* values, size_t size)
+    {
+      CompressedStorage res;
+      res.m_indices = indices;
+      res.m_values = values;
+      res.m_allocatedSize = res.m_size = size;
+      return res;
+    }
 
     /** \returns the largest \c k such that for all \c j in [0,k) index[\c j]\<\a key */
     inline Index searchLowerIndex(Index key) const
@@ -130,17 +129,17 @@ class CompressedStorage
     }
 
     /** \returns the largest \c k in [start,end) such that for all \c j in [start,k) index[\c j]\<\a key */
-    inline Index searchLowerIndex(Index start, Index end, Index key) const
+    inline Index searchLowerIndex(size_t start, size_t end, Index key) const
     {
       while(end>start)
       {
-        Index mid = (end+start)>>1;
+        size_t mid = (end+start)>>1;
         if (m_indices[mid]<key)
           start = mid+1;
         else
           end = mid;
       }
-      return start;
+      return static_cast<Index>(start);
     }
 
     /** \returns the stored value at index \a key
@@ -153,20 +152,20 @@ class CompressedStorage
         return m_values[m_size-1];
       // ^^  optimization: let's first check if it is the last coefficient
       // (very common in high level algorithms)
-      const Index id = searchLowerIndex(0,m_size-1,key);
+      const size_t id = searchLowerIndex(0,m_size-1,key);
       return ((id<m_size) && (m_indices[id]==key)) ? m_values[id] : defaultValue;
     }
 
     /** Like at(), but the search is performed in the range [start,end) */
-    inline Scalar atInRange(Index start, Index end, Index key, const Scalar &defaultValue = Scalar(0)) const
+    inline Scalar atInRange(size_t start, size_t end, Index key, const Scalar& defaultValue = Scalar(0)) const
     {
       if (start>=end)
-        return defaultValue;
+        return Scalar(0);
       else if (end>start && key==m_indices[end-1])
         return m_values[end-1];
       // ^^  optimization: let's first check if it is the last coefficient
       // (very common in high level algorithms)
-      const Index id = searchLowerIndex(start,end-1,key);
+      const size_t id = searchLowerIndex(start,end-1,key);
       return ((id<end) && (m_indices[id]==key)) ? m_values[id] : defaultValue;
     }
 
@@ -175,63 +174,62 @@ class CompressedStorage
       * such that the keys are sorted. */
     inline Scalar& atWithInsertion(Index key, const Scalar& defaultValue = Scalar(0))
     {
-      Index id = searchLowerIndex(0,m_size,key);
+      size_t id = searchLowerIndex(0,m_size,key);
       if (id>=m_size || m_indices[id]!=key)
       {
-        if (m_allocatedSize<m_size+1)
+        resize(m_size+1,1);
+        for (size_t j=m_size-1; j>id; --j)
         {
-          Index newAllocatedSize = 2 * (m_size + 1);
-          m_values = conditional_aligned_realloc_new_auto<Scalar, true>(m_values, newAllocatedSize, m_allocatedSize);
-          m_indices =
-              conditional_aligned_realloc_new_auto<StorageIndex, true>(m_indices, newAllocatedSize, m_allocatedSize);
-          m_allocatedSize = newAllocatedSize;
+          m_indices[j] = m_indices[j-1];
+          m_values[j] = m_values[j-1];
         }
-        if(m_size>id)
-        {
-          internal::smart_memmove(m_values +id, m_values +m_size, m_values +id+1);
-          internal::smart_memmove(m_indices+id, m_indices+m_size, m_indices+id+1);
-        }
-        m_size++;
-        m_indices[id] = internal::convert_index<StorageIndex>(key);
+        m_indices[id] = key;
         m_values[id] = defaultValue;
       }
       return m_values[id];
     }
 
-    void moveChunk(Index from, Index to, Index chunkSize)
+    void prune(const Scalar& reference, const RealScalar& epsilon = NumTraits<RealScalar>::dummy_precision())
     {
-      eigen_internal_assert(to+chunkSize <= m_size);
-      if(to>from && from+chunkSize>to)
+      size_t k = 0;
+      size_t n = size();
+      for (size_t i=0; i<n; ++i)
       {
-        // move backward
-        internal::smart_memmove(m_values+from,  m_values+from+chunkSize,  m_values+to);
-        internal::smart_memmove(m_indices+from, m_indices+from+chunkSize, m_indices+to);
+        if (!internal::isMuchSmallerThan(value(i), reference, epsilon))
+        {
+          value(k) = value(i);
+          index(k) = index(i);
+          ++k;
+        }
       }
-      else
-      {
-        internal::smart_copy(m_values+from,  m_values+from+chunkSize,  m_values+to);
-        internal::smart_copy(m_indices+from, m_indices+from+chunkSize, m_indices+to);
-      }
+      resize(k,0);
     }
 
   protected:
 
-    inline void reallocate(Index size)
+    inline void reallocate(size_t size)
     {
-      #ifdef EIGEN_SPARSE_COMPRESSED_STORAGE_REALLOCATE_PLUGIN
-        EIGEN_SPARSE_COMPRESSED_STORAGE_REALLOCATE_PLUGIN
-      #endif
-      eigen_internal_assert(size!=m_allocatedSize);
-      m_values = conditional_aligned_realloc_new_auto<Scalar, true>(m_values, size, m_allocatedSize);
-      m_indices = conditional_aligned_realloc_new_auto<StorageIndex, true>(m_indices, size, m_allocatedSize);
+      Scalar* newValues  = new Scalar[size];
+      Index* newIndices = new Index[size];
+      size_t copySize = (std::min)(size, m_size);
+      // copy
+      if (copySize>0) {
+        internal::smart_copy(m_values, m_values+copySize, newValues);
+        internal::smart_copy(m_indices, m_indices+copySize, newIndices);
+      }
+      // delete old stuff
+      delete[] m_values;
+      delete[] m_indices;
+      m_values = newValues;
+      m_indices = newIndices;
       m_allocatedSize = size;
     }
 
   protected:
     Scalar* m_values;
-    StorageIndex* m_indices;
-    Index m_size;
-    Index m_allocatedSize;
+    Index* m_indices;
+    size_t m_size;
+    size_t m_allocatedSize;
 
 };
 

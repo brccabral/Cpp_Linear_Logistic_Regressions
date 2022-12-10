@@ -10,9 +10,7 @@
 #ifndef EIGEN_STRIDE_H
 #define EIGEN_STRIDE_H
 
-#include "./InternalHeaderCheck.h"
-
-namespace Eigen {
+namespace Eigen { 
 
 /** \class Stride
   * \ingroup Core_Module
@@ -33,61 +31,47 @@ namespace Eigen {
   * arguments to the constructor.
   *
   * Indeed, this class takes two template parameters:
-  *  \tparam OuterStrideAtCompileTime_ the outer stride, or Dynamic if you want to specify it at runtime.
-  *  \tparam InnerStrideAtCompileTime_ the inner stride, or Dynamic if you want to specify it at runtime.
+  *  \param _OuterStrideAtCompileTime the outer stride, or Dynamic if you want to specify it at runtime.
+  *  \param _InnerStrideAtCompileTime the inner stride, or Dynamic if you want to specify it at runtime.
   *
   * Here is an example:
   * \include Map_general_stride.cpp
   * Output: \verbinclude Map_general_stride.out
   *
-  * Both strides can be negative. However, a negative stride of -1 cannot be specified at compile time
-  * because of the ambiguity with Dynamic which is defined to -1 (historically, negative strides were
-  * not allowed).
-  *
-  * Note that for compile-time vectors (ColsAtCompileTime==1 or RowsAtCompile==1),
-  * the inner stride is the pointer increment between two consecutive elements,
-  * regardless of storage layout.
-  *
   * \sa class InnerStride, class OuterStride, \ref TopicStorageOrders
   */
-template<int OuterStrideAtCompileTime_, int InnerStrideAtCompileTime_>
+template<int _OuterStrideAtCompileTime, int _InnerStrideAtCompileTime>
 class Stride
 {
   public:
-    typedef Eigen::Index Index; ///< \deprecated since Eigen 3.3
+    typedef DenseIndex Index;
     enum {
-      InnerStrideAtCompileTime = InnerStrideAtCompileTime_,
-      OuterStrideAtCompileTime = OuterStrideAtCompileTime_
+      InnerStrideAtCompileTime = _InnerStrideAtCompileTime,
+      OuterStrideAtCompileTime = _OuterStrideAtCompileTime
     };
 
     /** Default constructor, for use when strides are fixed at compile time */
-    EIGEN_DEVICE_FUNC
     Stride()
       : m_outer(OuterStrideAtCompileTime), m_inner(InnerStrideAtCompileTime)
     {
-      // FIXME: for Eigen 4 we should use DynamicIndex instead of Dynamic.
-      // FIXME: for Eigen 4 we should also unify this API with fix<>
       eigen_assert(InnerStrideAtCompileTime != Dynamic && OuterStrideAtCompileTime != Dynamic);
     }
 
     /** Constructor allowing to pass the strides at runtime */
-    EIGEN_DEVICE_FUNC
     Stride(Index outerStride, Index innerStride)
       : m_outer(outerStride), m_inner(innerStride)
     {
+      eigen_assert(innerStride>=0 && outerStride>=0);
     }
 
     /** Copy constructor */
-    EIGEN_DEVICE_FUNC
     Stride(const Stride& other)
       : m_outer(other.outer()), m_inner(other.inner())
     {}
 
     /** \returns the outer stride */
-    EIGEN_DEVICE_FUNC EIGEN_CONSTEXPR
     inline Index outer() const { return m_outer.value(); }
     /** \returns the inner stride */
-    EIGEN_DEVICE_FUNC EIGEN_CONSTEXPR
     inline Index inner() const { return m_inner.value(); }
 
   protected:
@@ -97,24 +81,26 @@ class Stride
 
 /** \brief Convenience specialization of Stride to specify only an inner stride
   * See class Map for some examples */
-template<int Value>
+template<int Value = Dynamic>
 class InnerStride : public Stride<0, Value>
 {
     typedef Stride<0, Value> Base;
   public:
-    EIGEN_DEVICE_FUNC InnerStride() : Base() {}
-    EIGEN_DEVICE_FUNC InnerStride(Index v) : Base(0, v) {} // FIXME making this explicit could break valid code
+    typedef DenseIndex Index;
+    InnerStride() : Base() {}
+    InnerStride(Index v) : Base(0, v) {}
 };
 
 /** \brief Convenience specialization of Stride to specify only an outer stride
   * See class Map for some examples */
-template<int Value>
+template<int Value = Dynamic>
 class OuterStride : public Stride<Value, 0>
 {
     typedef Stride<Value, 0> Base;
   public:
-    EIGEN_DEVICE_FUNC OuterStride() : Base() {}
-    EIGEN_DEVICE_FUNC OuterStride(Index v) : Base(v,0) {} // FIXME making this explicit could break valid code
+    typedef DenseIndex Index;
+    OuterStride() : Base() {}
+    OuterStride(Index v) : Base(v,0) {}
 };
 
 } // end namespace Eigen
