@@ -52,23 +52,18 @@ auto ETL::Std(Eigen::MatrixXd data) -> decltype((data.array().square().colwise()
     return ((data.array().square().colwise().sum()) / (data.rows() - 1)).sqrt();
 }
 
-// this function throws error for complete large data
-// it can work if remove some of the last rows
-// to use complete data, use ETL::Norm
+// normalize data
 Eigen::MatrixXd ETL::Normalize(Eigen::MatrixXd data)
 {
+    // although data.colwise().mean() is used in the next line, 
+    // for some reason the mean variable has to remain in the code
     auto mean = Mean(data);
-    Eigen::MatrixXd scaled_data = data.rowwise() - mean;
+    Eigen::MatrixXd scaled_data = data.rowwise() - data.colwise().mean();
     auto std = Std(scaled_data);
 
     Eigen::MatrixXd norm = scaled_data.array().rowwise() / std;
 
     return norm;
-}
-
-Eigen::MatrixXd ETL::Norm(Eigen::MatrixXd data)
-{
-    return data.array().rowwise() / data.colwise().norm().array();
 }
 
 std::tuple<Eigen::MatrixXd, Eigen::MatrixXd, Eigen::MatrixXd, Eigen::MatrixXd> ETL::TrainTestSplit(Eigen::MatrixXd data, float train_size)
@@ -98,7 +93,7 @@ void ETL::VectorToFile(std::vector<float> vector, std::string filename)
 void ETL::EigenToFile(Eigen::MatrixXd data, std::string filename)
 {
     std::ofstream output_file(filename);
-    if(output_file.is_open())
+    if (output_file.is_open())
     {
         output_file << data << "\n";
     }
