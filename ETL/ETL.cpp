@@ -87,3 +87,19 @@ std::tuple<Eigen::MatrixXd, Eigen::MatrixXd, Eigen::MatrixXd, Eigen::MatrixXd> E
 
     return std::make_tuple(X_train, y_train, X_test, y_test);
 }
+
+void ETL::VectorToFile(std::vector<float> vector, std::string filename)
+{
+    std::ofstream output_file(filename);
+    std::ostream_iterator<float> output_iterator(output_file, "\n");
+    std::copy(vector.begin(), vector.end(), output_iterator);
+}
+
+void ETL::EigenToFile(Eigen::MatrixXd data, std::string filename)
+{
+    std::ofstream output_file(filename);
+    if(output_file.is_open())
+    {
+        output_file << data << "\n";
+    }
+}

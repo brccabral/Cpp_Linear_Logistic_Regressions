@@ -45,12 +45,8 @@ int main(int argc, char *argv[])
     std::tuple<Eigen::VectorXd, std::vector<float>> gd = lr.GradientDescent(X_train, y_train, theta, alpha, iters);
     std::tie(thetaOut, cost) = gd;
 
-    std::cout << "Theta: " << thetaOut << std::endl;
-    std::cout << "Cost: " << std::endl;
-    for (auto v : cost)
-    {
-        std::cout << v << std::endl;
-    }
+    etl.VectorToFile(cost, "dataset/cost.txt");
+    etl.EigenToFile(thetaOut, "dataset/thetaOut.txt");
 
     return EXIT_SUCCESS;
 }
