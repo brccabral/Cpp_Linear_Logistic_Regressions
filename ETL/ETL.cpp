@@ -52,6 +52,9 @@ auto ETL::Std(Eigen::MatrixXd data) -> decltype((data.array().square().colwise()
     return ((data.array().square().colwise().sum()) / (data.rows() - 1)).sqrt();
 }
 
+// this function throws error for complete large data
+// it can work if remove some of the last rows
+// to use complete data, use ETL::Norm
 Eigen::MatrixXd ETL::Normalize(Eigen::MatrixXd data)
 {
     auto mean = Mean(data);
@@ -61,4 +64,9 @@ Eigen::MatrixXd ETL::Normalize(Eigen::MatrixXd data)
     Eigen::MatrixXd norm = scaled_data.array().rowwise() / std;
 
     return norm;
+}
+
+Eigen::MatrixXd ETL::Norm(Eigen::MatrixXd data)
+{
+    return data.array().rowwise() / data.colwise().norm().array();
 }
