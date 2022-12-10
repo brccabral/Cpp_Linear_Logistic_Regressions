@@ -10,3 +10,4 @@ These are just header files.
 
 ### Wine dataset
 Wine dataset downloaded from https://archive.ics.uci.edu/ml/datasets/wine  
+The larger dataset was downloaded from **AI Coding** repository, but removed a few of the last rows, or the code can't execute for all data.
