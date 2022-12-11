@@ -11,4 +11,4 @@ These are just header files.
 ### Wine dataset
 Wine dataset `wine.data` downloaded from https://archive.ics.uci.edu/ml/datasets/wine  
 The larger dataset `winedata.csv` was downloaded from **AI Coding** repository.
-To use **AI Coding** Normalize() function we need to remove a few recods from the larger dataset. If you want to keep all records, use the Eigen's own norm() function.
+To use **AI Coding** Normalize() function we need to remove a few recods from the larger dataset. If you want to keep all records, need to change **AI Coding** original code to use `data.colwise().mean()` instead of variable `mean` due to floating point overflow.

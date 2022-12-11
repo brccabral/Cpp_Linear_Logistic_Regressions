@@ -58,6 +58,8 @@ Eigen::MatrixXd ETL::Normalize(Eigen::MatrixXd data)
     // although data.colwise().mean() is used in the next line, 
     // for some reason the mean variable has to remain in the code
     auto mean = Mean(data);
+    // cannot use mean variable in the next line because of floating point overflow
+    // eigen library deals with overflow problems
     Eigen::MatrixXd scaled_data = data.rowwise() - data.colwise().mean();
     auto std = Std(scaled_data);
 
