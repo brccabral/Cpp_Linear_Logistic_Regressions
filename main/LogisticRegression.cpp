@@ -28,7 +28,9 @@ int main(int argc, char *argv[])
     int dims = X_train.cols();
     Eigen::MatrixXd W = Eigen::VectorXd::Zero(dims);
     double b = 0.0;
-    double lambda = 0.0;
+
+    double lambda = 0.001 * rows;
+
     bool log_cost = true;
     double learning_rate = 0.01;
     int num_iter = 10000;
