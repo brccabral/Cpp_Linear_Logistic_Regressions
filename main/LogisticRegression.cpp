@@ -49,5 +49,8 @@ int main(int argc, char *argv[])
     std::cout << "Train accuracy: " << train_acc << std::endl;
     std::cout << "Test accuracy: " << test_acc << std::endl;
 
+    std::vector<float> costVec(costs.begin(), costs.end());
+    etl.VectorToFile(costVec, "dataset/cost.txt");
+
     return EXIT_SUCCESS;
 }
