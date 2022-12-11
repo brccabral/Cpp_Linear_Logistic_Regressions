@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
     int cols = dataset[0].size();
 
     Eigen::MatrixXd dataMat = etl.CSVtoEigen(dataset, rows, cols);
-    Eigen::MatrixXd norm = etl.Normalize(dataMat);
+    Eigen::MatrixXd norm = etl.Normalize(dataMat, true);
 
     Eigen::MatrixXd X_train, y_train, X_test, y_test;
     std::tuple<Eigen::MatrixXd, Eigen::MatrixXd, Eigen::MatrixXd, Eigen::MatrixXd> split_data = etl.TrainTestSplit(norm, 0.8);

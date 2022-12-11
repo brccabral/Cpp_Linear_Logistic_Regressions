@@ -53,17 +53,31 @@ auto ETL::Std(Eigen::MatrixXd data) -> decltype((data.array().square().colwise()
 }
 
 // normalize data
-Eigen::MatrixXd ETL::Normalize(Eigen::MatrixXd data)
+Eigen::MatrixXd ETL::Normalize(Eigen::MatrixXd data, bool normalizeTarget)
 {
-    // although data.colwise().mean() is used in the next line, 
+    // when target is category we don't need to normalize it
+
+    Eigen::MatrixXd dataNorm;
+    if (normalizeTarget)
+        dataNorm = data;
+    else
+        dataNorm = data.leftCols(data.cols() - 1);
+
+    // although data.colwise().mean() is used in the next line,
     // for some reason the mean variable has to remain in the code
-    auto mean = Mean(data);
+    auto mean = Mean(dataNorm);
     // cannot use mean variable in the next line because of floating point overflow
     // eigen library deals with overflow problems
-    Eigen::MatrixXd scaled_data = data.rowwise() - data.colwise().mean();
+    Eigen::MatrixXd scaled_data = dataNorm.rowwise() - dataNorm.colwise().mean();
     auto std = Std(scaled_data);
 
     Eigen::MatrixXd norm = scaled_data.array().rowwise() / std;
+
+    if (!normalizeTarget)
+    {
+        norm.conservativeResize(norm.rows(), norm.cols() + 1);
+        norm.col(norm.cols() - 1) = data.rightCols(1);
+    }
 
     return norm;
 }
