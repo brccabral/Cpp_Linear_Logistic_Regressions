@@ -22,13 +22,13 @@ namespace Eigen {
   class aligned_allocator_indirection : public EIGEN_ALIGNED_ALLOCATOR<T>
   {
   public:
-    typedef size_t    size_type;
-    typedef ptrdiff_t difference_type;
-    typedef T*        pointer;
-    typedef const T*  const_pointer;
-    typedef T&        reference;
-    typedef const T&  const_reference;
-    typedef T         value_type;
+    typedef std::size_t     size_type;
+    typedef std::ptrdiff_t  difference_type;
+    typedef T*              pointer;
+    typedef const T*        const_pointer;
+    typedef T&              reference;
+    typedef const T&        const_reference;
+    typedef T               value_type;
 
     template<class U>
     struct rebind
@@ -46,17 +46,13 @@ namespace Eigen {
     ~aligned_allocator_indirection() {}
   };
 
-#ifdef _MSC_VER
+#if EIGEN_COMP_MSVC
 
   // sometimes, MSVC detects, at compile time, that the argument x
   // in std::vector::resize(size_t s,T x) won't be aligned and generate an error
   // even if this function is never called. Whence this little wrapper.
 #define EIGEN_WORKAROUND_MSVC_STL_SUPPORT(T) \
-  typename Eigen::internal::conditional< \
-    Eigen::internal::is_arithmetic<T>::value, \
-    T, \
-    Eigen::internal::workaround_msvc_stl_support<T> \
-  >::type
+  std::conditional_t<Eigen::internal::is_arithmetic<T>::value, T, Eigen::internal::workaround_msvc_stl_support<T> >
 
   namespace internal {
   template<typename T> struct workaround_msvc_stl_support : public T

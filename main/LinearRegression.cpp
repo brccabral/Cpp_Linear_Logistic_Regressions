@@ -17,12 +17,19 @@ int main(int argc, char *argv[])
     int rows = dataset.size();
     int cols = dataset[0].size();
 
+    std::cout << "Rows: " << rows << std::endl;
+    std::cout << "Cols: " << cols << std::endl;
+
     Eigen::MatrixXd dataMat = etl.CSVtoEigen(dataset, rows, cols);
+
+    std::cout << "dataMat (" << dataMat.rows() << "," << dataMat.cols() << ")" << std::endl;
     Eigen::MatrixXd norm = etl.Normalize(dataMat, true);
 
     Eigen::MatrixXd X_train, y_train, X_test, y_test;
     std::tuple<Eigen::MatrixXd, Eigen::MatrixXd, Eigen::MatrixXd, Eigen::MatrixXd> split_data = etl.TrainTestSplit(norm, 0.8);
     std::tie(X_train, y_train, X_test, y_test) = split_data;
+
+    std::cout << "X_train (" << X_train.rows() << "," << X_train.cols() << ")" << std::endl;
 
     Eigen::VectorXd vec_train = Eigen::VectorXd::Ones(X_train.rows());
     Eigen::VectorXd vec_test = Eigen::VectorXd::Ones(X_test.rows());

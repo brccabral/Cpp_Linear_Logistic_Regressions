@@ -69,9 +69,10 @@ Eigen::MatrixXd ETL::Normalize(Eigen::MatrixXd data, bool normalizeTarget)
     // cannot use mean variable in the next line because of floating point overflow
     // eigen library deals with overflow problems
     Eigen::MatrixXd scaled_data = dataNorm.rowwise() - dataNorm.colwise().mean();
-    auto std = Std(scaled_data);
-
-    Eigen::MatrixXd norm = scaled_data.array().rowwise() / std;
+    // to use Eigen3.4 need to not use std variable
+    // auto std = Std(scaled_data);
+    // Eigen::MatrixXd norm = scaled_data.array().rowwise() / std;
+    Eigen::MatrixXd norm = scaled_data.array().rowwise() / (((scaled_data.array().square().colwise().sum()) / (scaled_data.rows() - 1)).sqrt());
 
     if (!normalizeTarget)
     {
