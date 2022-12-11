@@ -19,7 +19,8 @@ std::tuple<Eigen::MatrixXd, double, double> LogisticRegression::Propagate(Eigen:
     auto cross_entropy = -(y.transpose() * (Eigen::VectorXd)A.array().log().transpose() +
                            ((Eigen::VectorXd)(1 - y.array())).transpose() * (Eigen::VectorXd)(1 - A.array()).log().transpose()) /
                          m;
-    auto l2_reg_cost = W.array().pow(2).sum() * (lambda / (2 * m));
+
+    double l2_reg_cost = W.array().pow(2).sum() * (lambda / (2 * m));
 
     double cost = static_cast<const double>((cross_entropy.array()[0])) + l2_reg_cost;
 
@@ -35,8 +36,8 @@ std::tuple<Eigen::MatrixXd, double, Eigen::MatrixXd, double, std::list<double>> 
                                                                                                              Eigen::MatrixXd X,
                                                                                                              Eigen::MatrixXd y,
                                                                                                              int num_iter,
-                                                                                                             double learnin_rate,
-                                                                                                             double lamba,
+                                                                                                             double learning_rate,
+                                                                                                             double lambda,
                                                                                                              bool log_cost)
 {
     std::list<double> costsList;
@@ -46,18 +47,18 @@ std::tuple<Eigen::MatrixXd, double, Eigen::MatrixXd, double, std::list<double>> 
 
     for (int i = 0; i < num_iter; i++)
     {
-        std::tuple<Eigen::MatrixXd, double, double> propagate = Propagate(W, b, X, y, lamba);
+        std::tuple<Eigen::MatrixXd, double, double> propagate = Propagate(W, b, X, y, lambda);
         std::tie(dw, db, cost) = propagate;
 
-        W = W - (learnin_rate * dw).transpose();
-        b = b - (learnin_rate * db);
+        W = W - (learning_rate * dw).transpose();
+        b = b - (learning_rate * db);
 
-        if (1 % 100 == 0)
+        if (i % 100 == 0)
         {
             costsList.push_back(cost);
         }
 
-        if (log_cost && 1 % 100 == 0)
+        if (log_cost && i % 100 == 0)
         {
             std::cout << "Cost after iteration " << i << ": " << cost << std::endl;
         }

@@ -14,8 +14,8 @@ public:
                                                                                              Eigen::MatrixXd X,
                                                                                              Eigen::MatrixXd y,
                                                                                              int num_iter,
-                                                                                             double learnin_rate,
-                                                                                             double lamba,
+                                                                                             double learning_rate,
+                                                                                             double lambda,
                                                                                              bool log_cost);
     Eigen::MatrixXd Predict(Eigen::MatrixXd W, double b, Eigen::MatrixXd X);
 };
