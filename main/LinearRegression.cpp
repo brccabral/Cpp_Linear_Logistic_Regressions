@@ -1,5 +1,5 @@
-#include "ETL/ETL.h"
-#include "LinearRegression/LinearRegression.h"
+#include "../ETL/ETL.h"
+#include "../LinearRegression/LinearRegression.h"
 
 #include <iostream>
 #include <string>
