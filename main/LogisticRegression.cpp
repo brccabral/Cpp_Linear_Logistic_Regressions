@@ -1,6 +1,8 @@
 #include "../ETL/ETL.h"
 
 #include <vector>
+#include <string>
+#include <eigen3/Eigen/Dense>
 
 int main(int argc, char *argv[])
 {
@@ -11,8 +13,9 @@ int main(int argc, char *argv[])
     int rows = dataset.size();
     int cols = dataset[0].size();
 
-    std::cout << "Rows " << rows << std::endl;
-    std::cout << "Cols " << cols << std::endl;
+    Eigen::MatrixXd dataMat = etl.CSVtoEigen(dataset, rows, cols);
+
+    std::cout << dataMat << std::endl;
 
     return EXIT_SUCCESS;
 }
