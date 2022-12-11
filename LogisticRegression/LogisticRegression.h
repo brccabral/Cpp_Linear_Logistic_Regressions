@@ -17,4 +17,5 @@ public:
                                                                                              double learnin_rate,
                                                                                              double lamba,
                                                                                              bool log_cost);
+    Eigen::MatrixXd Predict(Eigen::MatrixXd W, double b, Eigen::MatrixXd X);
 };

@@ -65,3 +65,27 @@ std::tuple<Eigen::MatrixXd, double, Eigen::MatrixXd, double, std::list<double>> 
 
     return std::make_tuple(W, b, dw, db, costsList);
 }
+
+Eigen::MatrixXd LogisticRegression::Predict(Eigen::MatrixXd W, double b, Eigen::MatrixXd X)
+{
+    int m = X.rows();
+
+    Eigen::MatrixXd y_pred = Eigen::VectorXd::Zero(m).transpose();
+
+    Eigen::MatrixXd Z = (W.transpose() * X.transpose()).array() + b;
+    Eigen::MatrixXd A = Sigmoid(Z);
+
+    for (int i = 0; i < A.cols(); i++)
+    {
+        if (A(0, i) <= 0.5)
+        {
+            y_pred(0, i) = 0;
+        }
+        else
+        {
+            y_pred(0, i) = 1;
+        }
+    }
+
+    return y_pred.transpose();
+}
