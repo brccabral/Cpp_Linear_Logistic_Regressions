@@ -29,3 +29,39 @@ std::tuple<Eigen::MatrixXd, double, double> LogisticRegression::Propagate(Eigen:
 
     return std::make_tuple(dw, db, cost);
 }
+
+std::tuple<Eigen::MatrixXd, double, Eigen::MatrixXd, double, std::list<double>> LogisticRegression::Optimize(Eigen::MatrixXd W,
+                                                                                                             double b,
+                                                                                                             Eigen::MatrixXd X,
+                                                                                                             Eigen::MatrixXd y,
+                                                                                                             int num_iter,
+                                                                                                             double learnin_rate,
+                                                                                                             double lamba,
+                                                                                                             bool log_cost)
+{
+    std::list<double> costsList;
+
+    Eigen::MatrixXd dw;
+    double db, cost;
+
+    for (int i = 0; i < num_iter; i++)
+    {
+        std::tuple<Eigen::MatrixXd, double, double> propagate = Propagate(W, b, X, y, lamba);
+        std::tie(dw, db, cost) = propagate;
+
+        W = W - (learnin_rate * dw).transpose();
+        b = b - (learnin_rate * db);
+
+        if (1 % 100 == 0)
+        {
+            costsList.push_back(cost);
+        }
+
+        if (log_cost && 1 % 100 == 0)
+        {
+            std::cout << "Cost after iteration " << i << ": " << cost << std::endl;
+        }
+    }
+
+    return std::make_tuple(W, b, dw, db, costsList);
+}
