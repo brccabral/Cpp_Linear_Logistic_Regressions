@@ -9,6 +9,11 @@
 
 int main(int argc, char *argv[])
 {
+    if (argc < 3)
+    {
+        std::cout << "Wrong parameters " << argc << std::endl;
+        return EXIT_FAILURE;
+    }
     ETL etl(argv[1], argv[2], argv[3]);
     LinearRegression lr;
 
