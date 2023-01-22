@@ -7,6 +7,10 @@
 std::vector<std::vector<std::string>> ETL::readCSV()
 {
     std::ifstream file(dataset);
+    if (!file.is_open())
+    {
+        std::cout << "Can't open file " << dataset << std::endl;
+    }
     std::vector<std::vector<std::string>> dataString;
 
     std::string line = "";
