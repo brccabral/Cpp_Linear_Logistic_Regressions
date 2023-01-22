@@ -2,7 +2,12 @@ CC = g++
 INCLUDE_DIR := $(PWD)/include
 CPPFLAGS := -O2
 
-all: objdir obj/ETL.o obj/main_LinearRegression.o obj/main_LogisticRegression.o obj/LinearRegression.o obj/LogisticRegression.o
+all: executable
+
+debug: CPPFLAGS := -O0 -g
+debug: executable
+
+executable: objdir obj/ETL.o obj/main_LinearRegression.o obj/main_LogisticRegression.o obj/LinearRegression.o obj/LogisticRegression.o
 	$(CC) $(CPPFLAGS) -o linear -I$(INCLUDE_DIR)/ obj/main_LinearRegression.o obj/ETL.o obj/LinearRegression.o
 	$(CC) $(CPPFLAGS) -o logistic -I$(INCLUDE_DIR)/ obj/main_LogisticRegression.o obj/ETL.o obj/LogisticRegression.o
 
